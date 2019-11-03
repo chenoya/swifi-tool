@@ -226,10 +226,22 @@ class JMP(FaultModel):
             check_or_fail(-2 ** 7 <= self.target < 2 ** 7, "Target value out of range : " + str(self.target))
             self.type = 0
         elif b0 == 0xE9:
-            self.target = absolute_target - (self.addr[0] + 1 + 4)
-            check_or_fail(self.config.arch == 'x86', "Opcode 0xE9 only supported with x86")
-            check_or_fail(-2 ** 31 <= self.target < 2 ** 31, "Target value out of range : " + str(self.target))
-            self.type = 1
+            try:
+                f.seek(self.addr[0] - 1)
+                b_prev = ord(f.read(1))
+            except ValueError:
+                b_prev = 0
+            if b_prev == 0x66:
+                self.addr = [self.addr[0] - 1]
+                self.target = absolute_target - (self.addr[0] + 2 + 2)
+                check_or_fail(self.config.arch == 'x86', "Opcode 0x66 0xE9 only supported with x86")
+                check_or_fail(-2 ** 15 <= self.target < 2 ** 15, "Target value out of range : " + str(self.target))
+                self.type = 2
+            else:
+                self.target = absolute_target - (self.addr[0] + 1 + 4)
+                check_or_fail(self.config.arch == 'x86', "Opcode 0xE9 only supported with x86")
+                check_or_fail(-2 ** 31 <= self.target < 2 ** 31, "Target value out of range : " + str(self.target))
+                self.type = 1
         elif b0 == 0x66 and b1 == 0xE9:
             self.target = absolute_target - (self.addr[0] + 2 + 2)
             check_or_fail(self.config.arch == 'x86', "Opcode 0x66 0xE9 only supported with x86")
@@ -290,10 +302,22 @@ class JBE(FaultModel):
             check_or_fail(-2 ** 7 <= self.target < 2 ** 7, "Target value out of range : " + str(self.target))
             self.type = 0
         elif b0 == 0x0F and 0x80 <= b1 <= 0x8F:
-            self.target = absolute_target - (self.addr[0] + 2 + 4)
-            check_or_fail(self.config.arch == 'x86', "Opcode " + hex(b0) + " only supported with x86")
-            check_or_fail(-2 ** 31 <= self.target < 2 ** 31, "Target value out of range : " + str(self.target))
-            self.type = 1
+            try:
+                f.seek(self.addr[0] - 1)
+                b_prev = ord(f.read(1))
+            except ValueError:
+                b_prev = 0
+            if b_prev == 0x66:
+                self.addr = [self.addr[0] - 1]
+                self.target = absolute_target - (self.addr[0] + 3 + 2)
+                check_or_fail(self.config.arch == 'x86', "Opcode 0x66 " + hex(b0) + " only supported with x86")
+                check_or_fail(-2 ** 15 <= self.target < 2 ** 15, "Target value out of range : " + str(self.target))
+                self.type = 2
+            else:
+                self.target = absolute_target - (self.addr[0] + 2 + 4)
+                check_or_fail(self.config.arch == 'x86', "Opcode " + hex(b0) + " only supported with x86")
+                check_or_fail(-2 ** 31 <= self.target < 2 ** 31, "Target value out of range : " + str(self.target))
+                self.type = 1
         elif b0 == 0x66 and b1 == 0x0F and 0x80 <= b2 <= 0x8F:
             self.target = absolute_target - (self.addr[0] + 3 + 2)
             check_or_fail(self.config.arch == 'x86', "Opcode 0x66 " + hex(b0) + " only supported with x86")
@@ -347,6 +371,7 @@ def main(argv):
                              'The possible models are :\n' + "\n".join([s.docs for s in fault_models.values()]) +
                              '\naddr can be a number or a range (number-number)')
     args = parser.parse_args(argv[1:])
+    check_or_fail(args.wordsize is None or args.wordsize > 0, "Word size must be positive")
 
     # General configuration
     config = ExecConfig(os.path.expanduser(args.infile), os.path.expanduser(args.outfile), args.arch, args.wordsize)
