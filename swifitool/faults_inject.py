@@ -366,7 +366,9 @@ def main(argv):
                         help='architecture of the executable (x86 or arm)')
     parser.add_argument('-g', '--graphical', action='store_true', required=False,
                         help='open a window comparing the input and the output')
-    parser.add_argument('fault_models', nargs='+', metavar='FAULT_MODEL',
+    parser.add_argument('-f', '--fromfile', type=str, metavar='FILE_MODELS', required=False,
+                        help='read the faults models from a file instead of command line')
+    parser.add_argument('fault_models', nargs='*', metavar='FAULT_MODEL',
                         help='one fault model followed by its parameters\n' +
                              'The possible models are :\n' + "\n".join([s.docs for s in fault_models.values()]) +
                              '\naddr can be a number or a range (number-number)')
@@ -377,6 +379,10 @@ def main(argv):
     config = ExecConfig(os.path.expanduser(args.infile), os.path.expanduser(args.outfile), args.arch, args.wordsize)
 
     # Fault models asked
+    if args.fromfile is not None:
+        with open(args.fromfile, 'r') as ff:
+            args.fault_models.extend(ff.read().split())
+    check_or_fail(len(args.fault_models) >= 1, "No fault models provided")
     fm_list = []
     indices = [i for i, x in enumerate(args.fault_models) if fault_models.get(x) is not None]
     indices.append(len(args.fault_models))
