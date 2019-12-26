@@ -1,12 +1,12 @@
 # SoftWare Implemented Fault Injection Tool
 Inject faults in executable files based on several fault models.  
-Usage :
+**Usage :**
 ```
 $ python3 faults_inject.py -h
 
 usage: faults_inject.py [-h] -i INFILE -o OUTFILE [-w WORDSIZE]
-                        [-a ARCHITECTURE] [-g]
-                        FAULT_MODEL [FAULT_MODEL ...]
+                        [-a ARCHITECTURE] [-g] [-f FILE_MODELS]
+                        [FAULT_MODEL [FAULT_MODEL ...]]
 
 Software implemented fault injection tool
 
@@ -32,4 +32,12 @@ optional arguments:
   -a ARCHITECTURE, --arch ARCHITECTURE
                         architecture of the executable (x86 or arm)
   -g, --graphical       open a window comparing the input and the output
+  -f FILE_MODELS, --fromfile FILE_MODELS
+                        read the faults models from a file instead of command line
 ```
+
+**Screenshots :**  
+![alt text](./examples/Graphical_tool.png "Content comparison")  
+The `-g` option will display a comparison of the hexadecimal content between the initial file and the edited file.
+
+For more details, see the [example page](./examples/README.md).
