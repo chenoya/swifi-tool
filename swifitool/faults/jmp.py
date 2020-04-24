@@ -6,7 +6,7 @@ from utils import *
 
 class JMP(FaultModel):
     name = 'JMP'
-    docs = '    JMP addr target \t\t change the jump to point on the target'
+    docs = '    JMP addr target \t\t change the jump to point on the target (relative near JMP on x86; B and BL on ARM)'
     nb_args = 2
 
     def __init__(self, config, args):
@@ -53,12 +53,12 @@ class JMP(FaultModel):
         elif self.config.arch == 'arm':
             f.seek(self.addr[0] + 3)
             b3 = ord(f.read(1))
-            if b3 == 0xEA:
+            if (b3 == 0xEA or b3 == 0xEB):
                 self.target = absolute_target - (self.addr[0] + 8)
                 check_or_fail(-2 ** 25 <= self.target < 2 ** 25, "Target value out of range : " + str(self.target))
-                self.type = 3  # unconditional B
+                self.type = 3  # unconditional B or unconditional BL
             else:
-                check_or_fail(False, "Unknow opcode at JBE address : " + hex(b3))
+                check_or_fail(False, "Unknow opcode at JMP address : " + hex(b3))
         f.close()
 
     def edited_memory_locations(self):

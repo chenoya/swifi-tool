@@ -6,7 +6,7 @@ from utils import *
 
 class JBE(FaultModel):
     name = 'JBE'
-    docs = '    JBE addr target \t\t change the conditional jump to point on the target'
+    docs = '    JBE addr target \t\t change the conditional jump to point on the target (relative near Jcc on x86; B and BL with a condition on ARM)'
     nb_args = 2
 
     def __init__(self, config, args):
@@ -54,7 +54,7 @@ class JBE(FaultModel):
         elif self.config.arch == 'arm':
             f.seek(self.addr[0] + 3)
             b3 = ord(f.read(1))
-            if b3 & 0x0E == 0x0A:
+            if (b3 & 0x0E == 0x0A) and (b3 & 0xF0 != 0xE0):
                 self.target = absolute_target - (self.addr[0] + 8)
                 check_or_fail(-2 ** 25 <= self.target < 2 ** 25, "Target value out of range : " + str(self.target))
                 self.type = 3  # B or BL

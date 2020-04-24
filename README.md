@@ -17,8 +17,8 @@ positional arguments:
                             Z1B addr                     set one byte to 0x0
                             Z1W addr                     set one word to 0x0
                             NOP addr                     nop one address (1 or 2 bytes depending on arch)
-                            JMP addr target              change the jump to point on the target
-                            JBE addr target              change the conditional jump to point on the target
+                            JMP addr target              change the jump to point on the target (relative near JMP on x86; B and BL on ARM)
+                            JBE addr target              change the conditional jump to point on the target (relative near Jcc on x86; B and BL with a condition on ARM)
                         addr can be a number or a range (number-number)
 
 optional arguments:
