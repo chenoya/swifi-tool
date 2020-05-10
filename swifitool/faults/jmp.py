@@ -19,47 +19,47 @@ class JMP(FaultModel):
             absolute_target = int(args[1], 0)
         except ValueError:
             check_or_fail(False, "Invalid target for JMP : " + args[1])
-        check_or_fail(0 <= absolute_target < os.stat(config.infile).st_size, "Target outside the file")
-        f = open(self.config.infile, 'rb')
-        f.seek(self.addr[0])
-        if self.config.arch == 'x86':
-            b0 = ord(f.read(1))
-            b1 = ord(f.read(1))
-            if b0 == 0xEB:
-                self.target = absolute_target - (self.addr[0] + 1 + 1)
-                check_or_fail(-2 ** 7 <= self.target < 2 ** 7, "Target value out of range : " + str(self.target))
-                self.type = 0  # opcode EB
-            elif b0 == 0xE9:
-                try:
-                    f.seek(self.addr[0] - 1)
-                    b_prev = ord(f.read(1))
-                except ValueError:
-                    b_prev = 0
-                if b_prev == 0x66:
-                    self.addr = [self.addr[0] - 1]
+        if not (0 <= absolute_target < os.stat(config.infile).st_size):
+            sys.stderr.write("Warning: Target outside the file" + "\n")
+        with open(self.config.infile, 'rb') as f:
+            f.seek(self.addr[0])
+            if self.config.arch == 'x86':
+                b0 = ord(f.read(1))
+                b1 = ord(f.read(1))
+                if b0 == 0xEB:
+                    self.target = absolute_target - (self.addr[0] + 1 + 1)
+                    check_or_fail(-2 ** 7 <= self.target < 2 ** 7, "Target value out of range : " + str(self.target))
+                    self.type = 0  # opcode EB
+                elif b0 == 0xE9:
+                    if self.addr[0] - 1 >= 0:
+                        f.seek(self.addr[0] - 1)
+                        b_prev = ord(f.read(1))
+                    else:
+                        b_prev = 0
+                    if b_prev == 0x66:
+                        self.addr = [self.addr[0] - 1]
+                        self.target = absolute_target - (self.addr[0] + 2 + 2)
+                        check_or_fail(-2 ** 15 <= self.target < 2 ** 15, "Target value out of range : " + str(self.target))
+                        self.type = 2  # opcode 66 E9
+                    else:
+                        self.target = absolute_target - (self.addr[0] + 1 + 4)
+                        check_or_fail(-2 ** 31 <= self.target < 2 ** 31, "Target value out of range : " + str(self.target))
+                        self.type = 1  # opcode E9
+                elif b0 == 0x66 and b1 == 0xE9:
                     self.target = absolute_target - (self.addr[0] + 2 + 2)
                     check_or_fail(-2 ** 15 <= self.target < 2 ** 15, "Target value out of range : " + str(self.target))
                     self.type = 2  # opcode 66 E9
                 else:
-                    self.target = absolute_target - (self.addr[0] + 1 + 4)
-                    check_or_fail(-2 ** 31 <= self.target < 2 ** 31, "Target value out of range : " + str(self.target))
-                    self.type = 1  # opcode E9
-            elif b0 == 0x66 and b1 == 0xE9:
-                self.target = absolute_target - (self.addr[0] + 2 + 2)
-                check_or_fail(-2 ** 15 <= self.target < 2 ** 15, "Target value out of range : " + str(self.target))
-                self.type = 2  # opcode 66 E9
-            else:
-                check_or_fail(False, "Unknow opcode at JMP address : " + hex(b0))
-        elif self.config.arch == 'arm':
-            f.seek(self.addr[0] + 3)
-            b3 = ord(f.read(1))
-            if (b3 == 0xEA or b3 == 0xEB):
-                self.target = absolute_target - (self.addr[0] + 8)
-                check_or_fail(-2 ** 25 <= self.target < 2 ** 25, "Target value out of range : " + str(self.target))
-                self.type = 3  # unconditional B or unconditional BL
-            else:
-                check_or_fail(False, "Unknow opcode at JMP address : " + hex(b3))
-        f.close()
+                    check_or_fail(False, "Unknow opcode at JMP address : " + hex(b0))
+            elif self.config.arch == 'arm':
+                f.seek(self.addr[0] + 3)
+                b3 = ord(f.read(1))
+                if (b3 == 0xEA or b3 == 0xEB):
+                    self.target = absolute_target - (self.addr[0] + 8)
+                    check_or_fail(-2 ** 25 <= self.target < 2 ** 25, "Target value out of range : " + str(self.target))
+                    self.type = 3  # unconditional B or unconditional BL
+                else:
+                    check_or_fail(False, "Unknow opcode at JMP address : " + hex(b3))
 
     def edited_memory_locations(self):
         if self.type == 0:

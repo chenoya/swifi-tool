@@ -8,18 +8,18 @@ def file_to_hex_col(file):
     :param file: path of the file
     :return: a formatted string
     """
-    f = open(file, 'rb')
-    values = f.read()
-    space = 0
-    res_str = ''
-    for n in range(len(values)):
-        value = values[n]
-        space += 1
-        if space % 16 != 0:
-            res_str += "{:02X} ".format(value)
-        else:
-            res_str += "{:02X}".format(value)
-    return res_str
+    with open(file, 'rb') as f:
+        values = f.read()
+        space = 0
+        res_str = ''
+        for n in range(len(values)):
+            value = values[n]
+            space += 1
+            if space % 16 != 0:
+                res_str += "{:02X} ".format(value)
+            else:
+                res_str += "{:02X}".format(value)
+        return res_str
 
 
 def diff_ui(infile, outfile, fm_list, colors):
