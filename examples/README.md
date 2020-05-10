@@ -134,7 +134,7 @@ In this case, the accessed offset on the stack is changed.
 ## Change the target of a jump instructions
 Changing the target of a jump can lead to the execution of dangerous hidden code. 
 ```
-python3 ../swifitool/faults_inject.py -i gcd -o gcd_jmp -a x86 JMP 0x611 0x600 JBE 0x60c 0x600
+python3 ../swifitool/faults_inject.py -i gcd -o gcd_jmp -a x86 JMP 0x611 0x600 JCC 0x60c 0x600
 ```
 It can also lead to decoding error if the target is not aligned with existing instructions.
 <pre>

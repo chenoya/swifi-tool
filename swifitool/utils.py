@@ -9,7 +9,7 @@ def check_or_fail(condition, msg):
     """
     if not condition:
         sys.stderr.write(msg + "\n")
-        exit(-1)
+        sys.exit(-1)
 
 
 def set_bytes(outfile, start_addr, value=0, nb_repeat=1):

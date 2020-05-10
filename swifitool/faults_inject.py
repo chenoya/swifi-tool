@@ -4,7 +4,7 @@ import sys
 import os
 
 from faults.flp import FLP
-from faults.jbe import JBE
+from faults.jcc import JCC
 from faults.jmp import JMP
 from faults.nop import NOP
 from faults.z1b import Z1B
@@ -24,7 +24,7 @@ class ExecConfig:
 
 
 def main(argv):
-    fault_models = {'FLP': FLP, 'Z1B': Z1B, 'Z1W': Z1W, 'NOP': NOP, 'JMP': JMP, 'JBE': JBE}
+    fault_models = {'FLP': FLP, 'Z1B': Z1B, 'Z1W': Z1W, 'NOP': NOP, 'JMP': JMP, 'JCC': JCC}
 
     # Collect parameters
     parser = argparse.ArgumentParser(description='Software implemented fault injection tool',
@@ -44,7 +44,7 @@ def main(argv):
                         help='one fault model followed by its parameters\n' +
                              'The possible models are :\n' + "\n".join([s.docs for s in fault_models.values()]) +
                              '\naddr can be a number or a range (number-number)')
-    args = parser.parse_args(argv[1:])
+    args = parser.parse_args(argv)
     check_or_fail(args.wordsize is None or args.wordsize > 0, "Word size must be positive")
 
     # General configuration
@@ -87,10 +87,10 @@ def main(argv):
 
     # Open a window for comparing the Input/Output with the faults highlighted
     if args.graphical:
-        colors = {'FLP': 'turquoise', 'Z1B': 'green', 'Z1W': 'green2', 'NOP': 'red', 'JMP': 'orange', 'JBE': 'tomato'}
+        colors = {'FLP': 'turquoise', 'Z1B': 'green', 'Z1W': 'green2', 'NOP': 'red', 'JMP': 'orange', 'JCC': 'tomato'}
         import diff_ui
         diff_ui.diff_ui(config.infile, config.outfile, fm_list, colors)
 
 
 if __name__ == '__main__':
-    main(sys.argv)
+    main(sys.argv[1:])

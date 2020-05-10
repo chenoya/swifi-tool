@@ -4,21 +4,21 @@ from faults.faultmodel import FaultModel
 from utils import *
 
 
-class JBE(FaultModel):
-    name = 'JBE'
-    docs = '    JBE addr target \t\t change the conditional jump to point on the target (relative near Jcc on x86; B and BL with a condition on ARM)'
+class JCC(FaultModel):
+    name = 'JCC'
+    docs = '    JCC addr target \t\t change the conditional jump to point on the target (relative near Jcc on x86; B and BL with a condition on ARM)'
     nb_args = 2
 
     def __init__(self, config, args):
         super().__init__(config, args)
         self.addr = parse_addr(args[0])
-        check_or_fail(len(self.addr) == 1, "Range of addresses not supported with JBE")
-        check_or_fail(config.arch is not None, "Architecture required when using JBE")
+        check_or_fail(len(self.addr) == 1, "Range of addresses not supported with JCC")
+        check_or_fail(config.arch is not None, "Architecture required when using JCC")
         absolute_target = None
         try:
             absolute_target = int(args[1], 0)
         except ValueError:
-            check_or_fail(False, "Invalid target for JBE : " + args[1])
+            check_or_fail(False, "Invalid target for JCC : " + args[1])
         check_or_fail(0 <= absolute_target < os.stat(config.infile).st_size, "Target outside the file")
         f = open(self.config.infile, 'rb')
         f.seek(self.addr[0])
@@ -50,7 +50,7 @@ class JBE(FaultModel):
                 check_or_fail(-2 ** 15 <= self.target < 2 ** 15, "Target value out of range : " + str(self.target))
                 self.type = 2
             else:
-                check_or_fail(False, "Unknow opcode at JBE address : " + hex(b0))
+                check_or_fail(False, "Unknow opcode at JCC address : " + hex(b0))
         elif self.config.arch == 'arm':
             f.seek(self.addr[0] + 3)
             b3 = ord(f.read(1))
@@ -59,7 +59,7 @@ class JBE(FaultModel):
                 check_or_fail(-2 ** 25 <= self.target < 2 ** 25, "Target value out of range : " + str(self.target))
                 self.type = 3  # B or BL
             else:
-                check_or_fail(False, "Unknow opcode at JBE address : " + hex(b3))
+                check_or_fail(False, "Unknow opcode at JCC address : " + hex(b3))
         f.close()
 
     def edited_memory_locations(self):
