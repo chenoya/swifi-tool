@@ -35,7 +35,7 @@ def main(argv):
     parser.add_argument('-w', '--wordsize', type=int, metavar='WORDSIZE', required=False,
                         help='number of bytes in a word')
     parser.add_argument('-a', '--arch', type=str, metavar='ARCHITECTURE', required=False, choices=['x86', 'arm'],
-                        help='architecture of the executable (x86 or arm)')
+                        help='architecture of the executable (x86 or arm) (x86 is for both 32 and 64 bits)')
     parser.add_argument('-g', '--graphical', action='store_true', required=False,
                         help='open a window comparing the input and the output')
     parser.add_argument('-f', '--fromfile', type=str, metavar='FILE_MODELS', required=False,

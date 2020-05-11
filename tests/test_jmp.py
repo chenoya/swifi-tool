@@ -150,7 +150,15 @@ class TestJMP(TestCase):
             faults_inject.main(["-i", self.file_in.name, "-o", self.file_out.name, "-a", "x86", "JMP", "0x0", "0x0"])
         self.assertEqual('Unknow opcode at JMP address : 0x31\n', err.getvalue())
 
-    def test_jmp_11(self):
+    @mock.patch('sys.stderr', new_callable=io.StringIO)
+    def test_jmp_11(self, err):
+        self.file_in.write(b'\x66\xc0\x31\xdb\x31\xc9\xeb\xfa\x31\xd2')
+        self.file_in.flush()
+        with self.assertRaises(SystemExit):
+            faults_inject.main(["-i", self.file_in.name, "-o", self.file_out.name, "-a", "x86", "JMP", "0x0", "0x0"])
+        self.assertEqual('Unknow opcode at JMP address : 0xc0\n', err.getvalue())
+
+    def test_jmp_12(self):
         self.file_in.write(b'\x07\x00\x00\xea')
         self.file_in.flush()
         #    0:	ea 00 00 07             b      0x24
@@ -159,7 +167,7 @@ class TestJMP(TestCase):
         #    0:	ea ff ff fe             b      0x0
 
     @mock.patch('sys.stderr', new_callable=io.StringIO)
-    def test_jmp_12(self, err):
+    def test_jmp_13(self, err):
         self.file_in.write(b'\x00\x01\x02\x03\x04\x05\x06\x07')
         self.file_in.flush()
         with self.assertRaises(SystemExit):

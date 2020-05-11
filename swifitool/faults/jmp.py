@@ -49,6 +49,8 @@ class JMP(FaultModel):
                     self.target = absolute_target - (self.addr[0] + 2 + 2)
                     check_or_fail(-2 ** 15 <= self.target < 2 ** 15, "Target value out of range : " + str(self.target))
                     self.type = 2  # opcode 66 E9
+                elif b0 == 0x66:
+                    check_or_fail(False, "Unknow opcode at JMP address : " + hex(b1))
                 else:
                     check_or_fail(False, "Unknow opcode at JMP address : " + hex(b0))
             elif self.config.arch == 'arm':

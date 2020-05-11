@@ -30,7 +30,7 @@ optional arguments:
   -w WORDSIZE, --wordsize WORDSIZE
                         number of bytes in a word
   -a ARCHITECTURE, --arch ARCHITECTURE
-                        architecture of the executable (x86 or arm)
+                        architecture of the executable (x86 or arm) (x86 is for both 32 or 64 bits)
   -g, --graphical       open a window comparing the input and the output
   -f FILE_MODELS, --fromfile FILE_MODELS
                         read the faults models from a file instead of command line
