@@ -63,7 +63,7 @@ class JMP(FaultModel):
                 else:
                     check_or_fail(False, "Unknow opcode at JMP address : " + hex(b3))
 
-    def edited_memory_locations(self):
+    def edited_file_locations(self):
         if self.type == 0:
             return bits_list(range(self.addr[0] + 1, self.addr[0] + 2))
         elif self.type == 1:

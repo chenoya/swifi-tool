@@ -24,41 +24,48 @@ class TestFLP(TestCase):
         os.unlink(self.file_out.name)
 
     def test_flp_01(self):
+        """Simple use case test."""
         faults_inject.main(["-i", self.file_in.name, "-o", self.file_out.name, "FLP",  "1",  "1"])
         self.assertEqual(b'\x01\x00\x03\x04\x05\x06\x07\x08', self.file_out.read())
 
     @mock.patch('sys.stderr', new_callable=io.StringIO)
     def test_flp_02(self, err):
+        """Negative byte offset."""
         with self.assertRaises(SystemExit):
             faults_inject.main(["-i", self.file_in.name, "-o", self.file_out.name, "FLP", "-1", "1"])
         self.assertEqual('Address outside file content : byte -0x1\n', err.getvalue())
 
     @mock.patch('sys.stderr', new_callable=io.StringIO)
     def test_flp_03(self, err):
+        """Out of the file byte offset."""
         with self.assertRaises(SystemExit):
             faults_inject.main(["-i", self.file_in.name, "-o", self.file_out.name, "FLP", "1000", "1"])
         self.assertEqual('Address outside file content : byte 0x3e8\n', err.getvalue())
 
     @mock.patch('sys.stderr', new_callable=io.StringIO)
     def test_flp_04(self, err):
+        """Not a number byte offset."""
         with self.assertRaises(SystemExit):
             faults_inject.main(["-i", self.file_in.name, "-o", self.file_out.name, "FLP", "abc", "1"])
         self.assertEqual('Wrong address format : abc\n', err.getvalue())
 
     @mock.patch('sys.stderr', new_callable=io.StringIO)
     def test_flp_05(self, err):
+        """Negative bit offset."""
         with self.assertRaises(SystemExit):
             faults_inject.main(["-i", self.file_in.name, "-o", self.file_out.name, "FLP", "1", "-1"])
         self.assertEqual('Significance must be between 0 and 7 : -1\n', err.getvalue())
 
     @mock.patch('sys.stderr', new_callable=io.StringIO)
     def test_flp_06(self, err):
+        """Greater than 7 bit offset."""
         with self.assertRaises(SystemExit):
             faults_inject.main(["-i", self.file_in.name, "-o", self.file_out.name, "FLP", "1", "8"])
         self.assertEqual('Significance must be between 0 and 7 : 8\n', err.getvalue())
 
     @mock.patch('sys.stderr', new_callable=io.StringIO)
     def test_flp_07(self, err):
+        """Not a number bit offset."""
         with self.assertRaises(SystemExit):
             faults_inject.main(["-i", self.file_in.name, "-o", self.file_out.name, "FLP", "1", "abc"])
         self.assertEqual('Wrong significance format : abc\n', err.getvalue())

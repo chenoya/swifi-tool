@@ -14,7 +14,7 @@ class NOP(FaultModel):
         if self.config.arch == 'arm' and len(self.addr) != 1:
             check_or_fail(len(self.addr) % 2 == 0, "Range of addresses for NOP must be multiple of two on ARM")
 
-    def edited_memory_locations(self):
+    def edited_file_locations(self):
         if len(self.addr) == 1:
             if self.config.arch == 'x86':
                 return bits_list(self.addr)

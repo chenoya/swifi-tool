@@ -49,6 +49,7 @@ class TestJCC(TestCase):
         os.unlink(self.file_out.name)
 
     def test_jcc_01(self):
+        """Simple use case test (JNE rel8)."""
         self.file_in.write(b'\x31\xc0\x31\xdb\x31\xc9\x75\xfa\x31\xd2')
         self.file_in.flush()
         #    0:  31 c0                  xor    eax,eax
@@ -65,6 +66,7 @@ class TestJCC(TestCase):
         #    8:  31 d2                  xor    edx,edx
 
     def test_jcc_02(self):
+        """Simple use case test (JNE rel16)."""
         self.file_in.write(b'\x31\xc0\x31\xdb\x31\xc9\x66\x0f\x85\xf9\xff\x31\xd2')
         self.file_in.flush()
         #    0:  31 c0                  xor    eax,eax
@@ -84,7 +86,8 @@ class TestJCC(TestCase):
         self.assertEqual(b'\x31\xc0\x31\xdb\x31\xc9\x66\x0f\x85\xf5\xff\x31\xd2', self.file_out.read())
         # can also omit counting the 0x66
 
-    def test_jcc_04(self):
+    def test_jcc_03(self):
+        """Simple use case test (JNE rel32)."""
         self.file_in.write(b'\x31\xc0\x31\xdb\x31\xc9\x0f\x85\xf6\xff\xff\xff\x31\xd2')
         self.file_in.flush()
         #    0:  31 c0                  xor    eax,eax
@@ -100,7 +103,8 @@ class TestJCC(TestCase):
         #    6:  0f 85 f4 ff ff ff      jne    0x0
         #    c:  31 d2                  xor    edx,edx
 
-    def test_jcc_05(self):
+    def test_jcc_04(self):
+        """Simple use case test (JNE rel32 first in the file)."""
         self.file_in.write(b'\x0f\x85\x00\x00\x00\x00\x31\xd2')
         self.file_in.flush()
         #    0:  0f 85 00 00 00 00      jne    0x6
@@ -111,7 +115,8 @@ class TestJCC(TestCase):
         #    6:  31 d2                  xor    edx,edx
 
     @mock.patch('sys.stderr', new_callable=io.StringIO)
-    def test_jcc_06(self, err):
+    def test_jcc_05(self, err):
+        """Jump address outside the file."""
         self.file_in.write(b'\x00\x01\x02\x03\x04\x05\x06\x07')
         self.file_in.flush()
         with self.assertRaises(Exception):
@@ -119,7 +124,8 @@ class TestJCC(TestCase):
         # TODO should print a user friendly message in this case
 
     @mock.patch('sys.stderr', new_callable=io.StringIO)
-    def test_jcc_07(self, err):
+    def test_jcc_06(self, err):
+        """Not a number jump address."""
         self.file_in.write(b'\x00\x01\x02\x03\x04\x05\x06\x07')
         self.file_in.flush()
         with self.assertRaises(SystemExit):
@@ -127,7 +133,8 @@ class TestJCC(TestCase):
         self.assertEqual('Wrong address format : abc\n', err.getvalue())
 
     @mock.patch('sys.stderr', new_callable=io.StringIO)
-    def test_jcc_08(self, err):
+    def test_jcc_07(self, err):
+        """Target address outside of possible range."""
         self.file_in.write(b'\x31\xc0\x31\xdb\x31\xc9\x75\xfa\x31\xd2')
         self.file_in.flush()
         with self.assertRaises(SystemExit):
@@ -135,7 +142,8 @@ class TestJCC(TestCase):
         self.assertEqual('Warning: Target outside the file\nTarget value out of range : 4088\n', err.getvalue())
 
     @mock.patch('sys.stderr', new_callable=io.StringIO)
-    def test_jcc_09(self, err):
+    def test_jcc_08(self, err):
+        """Not a number target address."""
         self.file_in.write(b'\x31\xc0\x31\xdb\x31\xc9\x75\xfa\x31\xd2')
         self.file_in.flush()
         with self.assertRaises(SystemExit):
@@ -143,7 +151,8 @@ class TestJCC(TestCase):
         self.assertEqual('Invalid target for JCC : abc\n', err.getvalue())
 
     @mock.patch('sys.stderr', new_callable=io.StringIO)
-    def test_jcc_10(self, err):
+    def test_jcc_09(self, err):
+        """Not a supported jump instruction at the given address."""
         self.file_in.write(b'\x31\xc0\x31\xdb\x31\xc9\x75\xfa\x31\xd2')
         self.file_in.flush()
         with self.assertRaises(SystemExit):
@@ -151,14 +160,16 @@ class TestJCC(TestCase):
         self.assertEqual('Unknow opcode at JCC address : 0x31\n', err.getvalue())
 
     @mock.patch('sys.stderr', new_callable=io.StringIO)
-    def test_jcc_11(self, err):
+    def test_jcc_10(self, err):
+        """Not a supported jump instruction at the given address (after 0x66)."""
         self.file_in.write(b'\x66\xc0\x31\xdb\x31\xc9\x75\xfa\x31\xd2')
         self.file_in.flush()
         with self.assertRaises(SystemExit):
             faults_inject.main(["-i", self.file_in.name, "-o", self.file_out.name, "-a", "x86", "JCC", "0x0", "0x0"])
         self.assertEqual('Unknow opcode at JCC address : 0xc0\n', err.getvalue())
 
-    def test_jcc_12(self):
+    def test_jcc_11(self):
+        """Simple use case test (ARM BNE instruction)."""
         self.file_in.write(b'\x07\x00\x00\x1a')
         self.file_in.flush()
         #    0:	1a 00 00 07             bne    0x24
@@ -167,7 +178,8 @@ class TestJCC(TestCase):
         #    0:	1a ff ff fe             bne    0x0
 
     @mock.patch('sys.stderr', new_callable=io.StringIO)
-    def test_jcc_13(self, err):
+    def test_jcc_12(self, err):
+        """Not a supported jump instruction at the given address (ARM)."""
         self.file_in.write(b'\x00\x01\x02\x03\x04\x05\x06\x07')
         self.file_in.flush()
         with self.assertRaises(SystemExit):

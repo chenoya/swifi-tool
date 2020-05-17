@@ -18,7 +18,7 @@ class FLP(FaultModel):
         except ValueError:
             check_or_fail(False, "Wrong significance format : " + args[1])
 
-    def edited_memory_locations(self):
+    def edited_file_locations(self):
         return [self.addr[0] * 8 + self.significance]
 
     def apply(self, opened_file):

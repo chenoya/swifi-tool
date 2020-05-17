@@ -9,7 +9,7 @@ class FaultModel:
         self.config = config
         self.args = args
 
-    def edited_memory_locations(self):
+    def edited_file_locations(self):
         """Returns the locations of the bits edited by the fault model."""
 
     def apply(self, opened_file):

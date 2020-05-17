@@ -49,6 +49,7 @@ class TestJMP(TestCase):
         os.unlink(self.file_out.name)
 
     def test_jmp_01(self):
+        """Simple use case test (JMP rel8)."""
         self.file_in.write(b'\x31\xc0\x31\xdb\x31\xc9\xeb\xfa\x31\xd2')
         self.file_in.flush()
         #    0:	31 c0                	xor    eax,eax
@@ -65,6 +66,7 @@ class TestJMP(TestCase):
         #    8:	31 d2                	xor    edx,edx
 
     def test_jmp_02(self):
+        """Simple use case test (JMP rel16)."""
         self.file_in.write(b'\x31\xc0\x31\xdb\x31\xc9\x66\xe9\xf8\xff\x31\xd2')
         self.file_in.flush()
         #    0:	31 c0                	xor    eax,eax
@@ -84,7 +86,8 @@ class TestJMP(TestCase):
         self.assertEqual(b'\x31\xc0\x31\xdb\x31\xc9\x66\xe9\xf6\xff\x31\xd2', self.file_out.read())
         # can also omit counting the 0x66
 
-    def test_jmp_04(self):
+    def test_jmp_03(self):
+        """Simple use case test (JMP rel32)."""
         self.file_in.write(b'\x31\xc0\x31\xdb\x31\xc9\xe9\xf7\xff\xff\xff\x31\xd2')
         self.file_in.flush()
         #    0:	31 c0                	xor    eax,eax
@@ -100,7 +103,8 @@ class TestJMP(TestCase):
         #    6:  e9 f5 ff ff ff         jmp    0x0
         #    b:  31 d2                  xor    edx,edx
 
-    def test_jmp_05(self):
+    def test_jmp_04(self):
+        """Simple use case test (JMP rel32 first in the file)."""
         self.file_in.write(b'\xe9\x00\x00\x00\x00\x31\xd2')
         self.file_in.flush()
         #    0:	e9 00 00 00 00       	jmp    0x5
@@ -111,15 +115,17 @@ class TestJMP(TestCase):
         #    5:  31 d2                  xor    edx,edx
 
     @mock.patch('sys.stderr', new_callable=io.StringIO)
-    def test_jmp_06(self, err):
+    def test_jmp_05(self, err):
+        """Jump address outside the file."""
         self.file_in.write(b'\x00\x01\x02\x03\x04\x05\x06\x07')
         self.file_in.flush()
         with self.assertRaises(Exception):
             faults_inject.main(["-i", self.file_in.name, "-o", self.file_out.name, "-a", "x86", "JMP", "0x1000", "0x0"])
-        # TODO should print a user friendly message in this case
+        # TODO should print a more user friendly message in this case
 
     @mock.patch('sys.stderr', new_callable=io.StringIO)
-    def test_jmp_07(self, err):
+    def test_jmp_06(self, err):
+        """Not a number jump address."""
         self.file_in.write(b'\x00\x01\x02\x03\x04\x05\x06\x07')
         self.file_in.flush()
         with self.assertRaises(SystemExit):
@@ -127,7 +133,8 @@ class TestJMP(TestCase):
         self.assertEqual('Wrong address format : abc\n', err.getvalue())
 
     @mock.patch('sys.stderr', new_callable=io.StringIO)
-    def test_jmp_08(self, err):
+    def test_jmp_07(self, err):
+        """Target address outside of possible range."""
         self.file_in.write(b'\x31\xc0\x31\xdb\x31\xc9\xeb\xfa\x31\xd2')
         self.file_in.flush()
         with self.assertRaises(SystemExit):
@@ -135,7 +142,8 @@ class TestJMP(TestCase):
         self.assertEqual('Warning: Target outside the file\nTarget value out of range : 4088\n', err.getvalue())
 
     @mock.patch('sys.stderr', new_callable=io.StringIO)
-    def test_jmp_09(self, err):
+    def test_jmp_08(self, err):
+        """Not a number target address."""
         self.file_in.write(b'\x31\xc0\x31\xdb\x31\xc9\xeb\xfa\x31\xd2')
         self.file_in.flush()
         with self.assertRaises(SystemExit):
@@ -143,7 +151,8 @@ class TestJMP(TestCase):
         self.assertEqual('Invalid target for JMP : abc\n', err.getvalue())
 
     @mock.patch('sys.stderr', new_callable=io.StringIO)
-    def test_jmp_10(self, err):
+    def test_jmp_09(self, err):
+        """Not a supported jump instruction at the given address."""
         self.file_in.write(b'\x31\xc0\x31\xdb\x31\xc9\xeb\xfa\x31\xd2')
         self.file_in.flush()
         with self.assertRaises(SystemExit):
@@ -151,14 +160,16 @@ class TestJMP(TestCase):
         self.assertEqual('Unknow opcode at JMP address : 0x31\n', err.getvalue())
 
     @mock.patch('sys.stderr', new_callable=io.StringIO)
-    def test_jmp_11(self, err):
+    def test_jmp_10(self, err):
+        """Not a supported jump instruction at the given address (after 0x66)."""
         self.file_in.write(b'\x66\xc0\x31\xdb\x31\xc9\xeb\xfa\x31\xd2')
         self.file_in.flush()
         with self.assertRaises(SystemExit):
             faults_inject.main(["-i", self.file_in.name, "-o", self.file_out.name, "-a", "x86", "JMP", "0x0", "0x0"])
         self.assertEqual('Unknow opcode at JMP address : 0xc0\n', err.getvalue())
 
-    def test_jmp_12(self):
+    def test_jmp_11(self):
+        """Simple use case test (ARM B instruction)."""
         self.file_in.write(b'\x07\x00\x00\xea')
         self.file_in.flush()
         #    0:	ea 00 00 07             b      0x24
@@ -167,7 +178,8 @@ class TestJMP(TestCase):
         #    0:	ea ff ff fe             b      0x0
 
     @mock.patch('sys.stderr', new_callable=io.StringIO)
-    def test_jmp_13(self, err):
+    def test_jmp_12(self, err):
+        """Not a supported jump instruction at the given address (ARM)."""
         self.file_in.write(b'\x00\x01\x02\x03\x04\x05\x06\x07')
         self.file_in.flush()
         with self.assertRaises(SystemExit):

@@ -11,7 +11,7 @@ class Z1B(FaultModel):
         super().__init__(config, args)
         self.addr = parse_addr(args[0])
 
-    def edited_memory_locations(self):
+    def edited_file_locations(self):
         return bits_list(self.addr)
 
     def apply(self, opened_file):

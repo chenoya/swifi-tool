@@ -14,7 +14,7 @@ class Z1W(FaultModel):
         check_or_fail(len(self.addr) == 1 or len(self.addr) % config.word_length == 0,
                       "Range of addresses for Z1W must be multiple of the word length")
 
-    def edited_memory_locations(self):
+    def edited_file_locations(self):
         if len(self.addr) == 1:
             return bits_list(range(self.addr[0], self.addr[0] + self.config.word_length))
         else:

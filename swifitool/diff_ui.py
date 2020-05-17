@@ -81,7 +81,7 @@ def diff_ui(infile, outfile, fm_list, colors):
 
     # Setting the colors
     for f in fm_list:
-        for m in f.edited_memory_locations():
+        for m in f.edited_file_locations():
             b_start = m // 8
             start = "1." + str(2 * b_start + b_start - b_start // 16)
             stop = "1." + str(2 * b_start + b_start - b_start // 16 + 2)

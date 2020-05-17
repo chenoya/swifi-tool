@@ -3,6 +3,7 @@ import shutil
 import sys
 import os
 
+from config import ExecConfig
 from faults.flp import FLP
 from faults.jcc import JCC
 from faults.jmp import JMP
@@ -10,17 +11,6 @@ from faults.nop import NOP
 from faults.z1b import Z1B
 from faults.z1w import Z1W
 from utils import check_or_fail
-
-
-class ExecConfig:
-    """Keeps the configuration variables."""
-
-    def __init__(self, infile, outfile, arch, word_length):
-        super().__init__()
-        self.infile = infile
-        self.outfile = outfile
-        self.arch = arch
-        self.word_length = word_length
 
 
 def main(argv):
@@ -74,7 +64,7 @@ def main(argv):
     mem = {}
     max_bits = os.stat(config.infile).st_size * 8
     for f in fm_list:
-        for m in f.edited_memory_locations():
+        for m in f.edited_file_locations():
             check_or_fail(0 <= m < max_bits, "Address outside file content : byte " + hex(m // 8))
             check_or_fail(mem.get(m) is None, "Applying two fault models at the same place : byte " + hex(m // 8))
             mem[m] = f.name
