@@ -14,7 +14,8 @@ from utils import check_or_fail
 
 
 def main(argv):
-    fault_models = {'FLP': FLP, 'Z1B': Z1B, 'Z1W': Z1W, 'NOP': NOP, 'JMP': JMP, 'JCC': JCC}
+    enabled_fault_models = [FLP, Z1B, Z1W, NOP, JMP, JCC]
+    names_fault_models = dict([(i.name, i) for i in enabled_fault_models])
 
     # Collect parameters
     parser = argparse.ArgumentParser(description='Software implemented fault injection tool',
@@ -32,7 +33,7 @@ def main(argv):
                         help='read the faults models from a file instead of command line')
     parser.add_argument('fault_models', nargs='*', metavar='FAULT_MODEL',
                         help='one fault model followed by its parameters\n' +
-                             'The possible models are :\n' + "\n".join([s.docs for s in fault_models.values()]) +
+                             'The possible models are :\n' + "\n".join([s.docs for s in enabled_fault_models]) +
                              '\naddr can be a number or a range (number-number)')
     args = parser.parse_args(argv)
     check_or_fail(args.wordsize is None or args.wordsize > 0, "Word size must be positive")
@@ -46,13 +47,13 @@ def main(argv):
             args.fault_models.extend(ff.read().split())
     check_or_fail(len(args.fault_models) >= 1, "No fault models provided")
     fm_list = []
-    indices = [i for i, x in enumerate(args.fault_models) if fault_models.get(x) is not None]
+    indices = [i for i, x in enumerate(args.fault_models) if names_fault_models.get(x) is not None]
     indices.append(len(args.fault_models))
 
     for i in range(len(indices) - 1):
         n = indices[i]
         fm_name = args.fault_models[n]
-        fm_type = fault_models.get(fm_name)
+        fm_type = names_fault_models.get(fm_name)
         if fm_type is not None:
             check_or_fail(indices[i + 1] - n - 1 == fm_type.nb_args, "Wrong number of parameters for " + fm_name)
             ar = []
