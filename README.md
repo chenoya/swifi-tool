@@ -1,5 +1,7 @@
 # SoftWare Implemented Fault Injection Tool
-Inject faults in executable files based on several fault models.  
+Inject faults in executable files based on several fault models.
+This tool is based on the previous work [Fault-Injection-Tool](https://github.com/nisrine/Fault-Injection-Tool).
+  
 **Usage :**
 ```
 $ python3 faults_inject.py -h
